@@ -1,0 +1,50 @@
+#include<stdio.h>
+#include<string.h>
+#include<stdlib.h>
+// We have two includes.  One to separate 
+// the commands from the web and the second to change 
+// back characters that the web replaced with the correct codes
+#include "querystringoracle.c"
+#include "specialcharacters.c"
+exec sql include sqlca;
+void main(){
+exec sql begin declare section;
+VARCHAR sHotelName[100],sTransDate[100];
+int nQuantity,nUnitPrice,nExtPrice,nSITotal,nGTotal,nTotal;
+VARCHAR sUserID[21], sPassword[21];
+exec sql end declare section;
+
+int i;
+int icontentlength;
+char *usrInput;
+
+exec sql declare dbItems cursor for
+/*SELECT G.Guest_ID, G.Last_Name, G.First_Name,  H.Hotel_Name,    TO_CHAR(S.Start_Date,'dd-mon-yyyy') as Start_Date,   S.Number_Days, S.Room	FROM Guest G, Stay S, Hotel H WHERE G.Guest_ID = S.Guest_ID AND   S.Hotel_ID = H.Hotel_ID AND   H.City Like :sInCity;*/
+select Hotel_name,quantity,unitprice,transdate from hotel,charge,sales_item;
+
+SetOrclEvars();
+
+strcpy(sUserID.arr,"mpetros2"); 
+	strcpy(sPassword.arr,"whatnow"); 
+	sUserID.len=strlen(sUserID.arr);
+	sPassword.len=strlen(sPassword.arr);
+	exec sql connect :sUserID identified by :sPassword;
+
+	// Check to see if the connection worked.  If it did not, send out an error message
+	if(sqlca.sqlcode !=0)
+	{ 
+		printf("Content-type: text/plain\n\n");
+		printf("Sorry, cannot connect to server, pgm aborted %d\n,sqlca.sqlcode");
+		exit(1);
+	}
+	
+	// Check to see if this was a POST or a GET.  
+	// If it was a post, go pull together the query string
+	// from the HTML.  It it was just a Get, it will already
+	// be ready for us.
+
+	
+usrInput=getenv("QUERY_STRING");
+printf("<html><title>Charged Items</title><body><p>I don't work yet</p></body></html>");
+exit(0);
+}

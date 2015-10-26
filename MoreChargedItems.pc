@@ -1,0 +1,59 @@
+#include<stdio.h>
+#include<string.h>
+#include<stdlib.h>
+// We have two includes.  One to separate 
+// the commands from the web and the second to change 
+// back characters that the web replaced with the correct codes
+#include "querystringoracle.c"
+#include "specialcharacters.c"
+exec sql include sqlca;
+int main(){
+exec sql begin declare section;
+VARCHAR sHotelName[101],sItemName[101],sTaxable[2],sBarcode[101];
+int sHotelID,sItemID,sTotalQty,sTotalAmt,sAvgUnitPrice;
+VARCHAR sUser_ID[21],sPassword[20];
+exec sql end declare section;
+
+int i;
+int icontentlength;
+char * method, * contentlength;
+
+exec sql declare dbItems cursor for
+SELECT G.Guest_ID, G.Last_Name, G.First_Name,  H.Hotel_Name,    TO_CHAR(S.Start_Date,'dd-mon-yyyy') as Start_Date,   S.Number_Days, S.Room	FROM Guest G, Stay S, Hotel H WHERE G.Guest_ID = S.Guest_ID AND   S.Hotel_ID = H.Hotel_ID AND   H.City Like :sInCity;
+
+SetOrclEvars();
+
+strcpy(sUser_ID.arr,"mpetros2"); 
+	strcpy(sPassword.arr,"wh0r@cl3"); 
+	sUser_ID.len=strlen(sUser_ID.arr);
+	sPassword.len=strlen(sPassword.arr);
+	exec sql connect :sUser_ID identified by :sPassword;
+
+	// Check to see if the connection worked.  If it did not, send out an error message
+	if(sqlca.sqlcode !=0)
+	{ 
+		printf("Content-type: text/plain\n\n");
+		printf("Sorry, cannot connect to server, pgm aborted %d\n",sqlca.sqlcode);
+		exit(1);
+	}
+	
+	// Check to see if this was a POST or a GET.  
+	// If it was a post, go pull together the query string
+	// from the HTML.  It it was just a Get, it will already
+	// be ready for us.
+	method=getenv("REQUEST_METHOD");
+	if (strcmp(method,"POST")==0)
+	{
+		contentlength=getenv("CONTENT_LENGTH");
+		sscanf(contentlength, "%d", &icontentlength);
+		glInput=malloc(icontentlength+1);
+		for (i=0; i<icontentlength; i++)
+		{ glInput[i]=getchar(); }
+		glInput[icontentlength]=0;
+	}
+	else glInput=getenv("QUERY_STRING");
+	glLength=strlen(glInput);
+	fixStatement(glInput);
+
+printf("<html><title>Charged Items</title><body><p>I don't work yet</p><p><a href=\"http://dboracle.eng.fau.edu:7777/~mpetros2/SimpleMenu.HTML\"></a></p></body></html>");
+}
